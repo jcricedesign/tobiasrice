@@ -48,6 +48,13 @@
 <body>
 	<canvas id="spirograph"></canvas>
 	<div class="instructions">Press <b>F</b> for fullscreen. Multiple spirograph patterns animate and change color.</div>
+	<div id="audio-container" style="position:absolute;top:32px;right:32px;z-index:10;">
+		<audio id="bg-audio" src="assets/audio/Crimson-and-Clover.mp3" autoplay loop></audio>
+		<div id="audio-controls" style="display:none;background:rgba(18,18,18,0.85);border-radius:8px;padding:8px 12px;box-shadow:0 2px 8px #000;">
+			<button id="playpause">⏸</button>
+			<button id="mute">🔊</button>
+		</div>
+	</div>
 	<script>
 		const canvas = document.getElementById('spirograph');
 		const ctx = canvas.getContext('2d');
@@ -119,6 +126,41 @@
 				}
 			}
 		});
+
+		// Audio controls logic
+		const audio = document.getElementById('bg-audio');
+		const controls = document.getElementById('audio-controls');
+		const playpause = document.getElementById('playpause');
+		const mute = document.getElementById('mute');
+		let isPlaying = true;
+
+		document.getElementById('audio-container').addEventListener('mouseenter', () => {
+			controls.style.display = 'block';
+		});
+		document.getElementById('audio-container').addEventListener('mouseleave', () => {
+			controls.style.display = 'none';
+		});
+
+		playpause.addEventListener('click', () => {
+			if (audio.paused) {
+				audio.play();
+				playpause.textContent = '⏸';
+				isPlaying = true;
+			} else {
+				audio.pause();
+				playpause.textContent = '▶️';
+				isPlaying = false;
+			}
+		});
+
+		mute.addEventListener('click', () => {
+			audio.muted = !audio.muted;
+			mute.textContent = audio.muted ? '🔇' : '🔊';
+		});
+
+		// Set initial button states
+		playpause.textContent = '⏸';
+		mute.textContent = '🔊';
 
 		animate();
 	</script>
