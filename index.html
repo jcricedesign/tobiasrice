@@ -1,168 +1,91 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Spirograph Visualizer</title>
-	<style>
-		html, body {
-			height: 100%;
-			margin: 0;
-			padding: 0;
-			background: #121212;
-			color: #fff;
-			font-family: system-ui, sans-serif;
-		}
-		body {
-			margin: 0;
-			padding: 0;
-			width: 100vw;
-			height: 100vh;
-			overflow: hidden;
-			background: #121212;
-		}
-		#spirograph {
-			position: fixed;
-			top: 0; left: 0; width: 100vw; height: 100vh;
-			display: block;
-			background: #121212;
-			border-radius: 0;
-			box-shadow: none;
-			margin: 0;
-			z-index: 1;
-		}
-		.instructions {
-			position: absolute;
-			top: 16px;
-			left: 0;
-			width: 100vw;
-			text-align: center;
-			font-size: 1rem;
-			opacity: 0.7;
-			z-index: 2;
-			pointer-events: none;
-		}
-	</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TR Monogram Logo Animation</title>
+  <style>
+    body {
+      background: #000;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .logo-svg {
+      opacity: 0;
+      transform: scale(0.8);
+      transition: opacity 1s ease, transform 1.2s cubic-bezier(.68,-0.55,.27,1.55);
+    }
+    .logo-svg.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+    .logo-svg g > * {
+      stroke-dasharray: 1000;
+      stroke-dashoffset: 1000;
+    }
+    .logo-svg.visible g > * {
+      animation: draw 5s forwards;
+    }
+    .logo-svg.pulse {
+      animation: pulse 3.5s ease-in-out infinite;
+      filter: drop-shadow(0 0 12px #F2F2F2) drop-shadow(0 0 24px #F2F2F2);
+    }
+    @keyframes draw {
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 12px #F2F2F2) drop-shadow(0 0 24px #F2F2F2);
+      }
+      50% {
+        transform: scale(1.04);
+        filter: drop-shadow(0 0 20px #F2F2F2) drop-shadow(0 0 40px #F2F2F2);
+      }
+      100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 12px #F2F2F2) drop-shadow(0 0 24px #F2F2F2);
+      }
+    }
+  </style>
 </head>
 <body>
-	<canvas id="spirograph"></canvas>
-	<div class="instructions">Press <b>F</b> for fullscreen. Multiple spirograph patterns animate and change color.</div>
-	<div id="audio-container" style="position:absolute;top:32px;right:32px;z-index:10;">
-		<audio id="bg-audio" src="assets/audio/Crimson-and-Clover.mp3" autoplay loop></audio>
-		<div id="audio-controls" style="display:none;background:rgba(18,18,18,0.85);border-radius:8px;padding:8px 12px;box-shadow:0 2px 8px #000;">
-			<button id="playpause">⏸</button>
-			<button id="mute">🔊</button>
-		</div>
-	</div>
-	<script>
-		const canvas = document.getElementById('spirograph');
-		const ctx = canvas.getContext('2d');
-		let t = 0;
-		let hue = 0;
-		let animId;
+  <svg class="logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="TR circular monogram logo">
+    <!-- Transparent background: removed rect -->
+    <g fill="none" stroke="#F2F2F2" stroke-linecap="square" stroke-linejoin="round">
+      <circle cx="512" cy="505" r="193" stroke-width="8"/>
+      <circle cx="512" cy="505" r="118" stroke-width="8"/>
 
-		// Resize canvas to fill window
-		function resizeCanvas() {
-			canvas.width = window.innerWidth;
-			canvas.height = window.innerHeight;
-		}
-		window.addEventListener('resize', resizeCanvas);
-		resizeCanvas();
+      <!-- T -->
+      <path d="M 427 430 L 510 430" stroke-width="8"/>
+      <path d="M 478 430 L 478 582" stroke-width="8"/>
 
-		// Multiple spirograph parameters
-		const spiroParams = [
-			{ R: 260, r: 80, d: 120, speed: 0.18, colorOffset: 0 },
-			{ R: 180, r: 60, d: 180, speed: 0.12, colorOffset: 60 },
-			{ R: 320, r: 110, d: 90, speed: 0.09, colorOffset: 120 },
-			{ R: 220, r: 50, d: 200, speed: 0.15, colorOffset: 180 },
-			{ R: 150, r: 40, d: 220, speed: 0.22, colorOffset: 240 }
-		];
-		const points = 1800;
-
-		function drawSpirograph(time) {
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			ctx.save();
-			ctx.translate(canvas.width/2, canvas.height/2);
-			for (let s = 0; s < spiroParams.length; s++) {
-				const { R, r, d, speed, colorOffset } = spiroParams[s];
-				ctx.beginPath();
-				for (let i = 0; i <= points; i++) {
-					const theta = i * 2 * Math.PI / points + time * speed;
-					// Hypotrochoid parametric equations
-					const x = (R - r) * Math.cos(theta) + d * Math.cos(((R - r) / r) * theta + time * (speed + 0.1));
-					const y = (R - r) * Math.sin(theta) - d * Math.sin(((R - r) / r) * theta + time * (speed + 0.1));
-					if (i === 0) ctx.moveTo(x, y);
-					else ctx.lineTo(x, y);
-				}
-				ctx.strokeStyle = `hsl(${(hue + colorOffset) % 360}, 80%, 60%)`;
-				ctx.lineWidth = 1.7;
-				ctx.shadowColor = `hsl(${(hue + colorOffset) % 360}, 80%, 60%)`;
-				ctx.shadowBlur = 12;
-				ctx.globalAlpha = 0.7;
-				ctx.stroke();
-			}
-			ctx.restore();
-		}
-
-		function animate() {
-			t += 0.004; // slower
-			hue = (hue + 0.5) % 360;
-			drawSpirograph(t);
-			animId = requestAnimationFrame(animate);
-		}
-
-		// Fullscreen on F
-		document.addEventListener('keydown', (e) => {
-			if (e.key.toLowerCase() === 'f') {
-				if (document.fullscreenElement) {
-					document.exitFullscreen();
-				} else {
-					if (canvas.requestFullscreen) {
-						canvas.requestFullscreen();
-					} else if (canvas.webkitRequestFullscreen) {
-						canvas.webkitRequestFullscreen();
-					}
-				}
-			}
-		});
-
-		// Audio controls logic
-		const audio = document.getElementById('bg-audio');
-		const controls = document.getElementById('audio-controls');
-		const playpause = document.getElementById('playpause');
-		const mute = document.getElementById('mute');
-		let isPlaying = true;
-
-		document.getElementById('audio-container').addEventListener('mouseenter', () => {
-			controls.style.display = 'block';
-		});
-		document.getElementById('audio-container').addEventListener('mouseleave', () => {
-			controls.style.display = 'none';
-		});
-
-		playpause.addEventListener('click', () => {
-			if (audio.paused) {
-				audio.play();
-				playpause.textContent = '⏸';
-				isPlaying = true;
-			} else {
-				audio.pause();
-				playpause.textContent = '▶️';
-				isPlaying = false;
-			}
-		});
-
-		mute.addEventListener('click', () => {
-			audio.muted = !audio.muted;
-			mute.textContent = audio.muted ? '🔇' : '🔊';
-		});
-
-		// Set initial button states
-		playpause.textContent = '⏸';
-		mute.textContent = '🔊';
-
-		animate();
-	</script>
+      <!-- R -->
+      <path d="M 508 430 L 508 582" stroke-width="8"/>
+      <path d="M 508 430 L 550 430" stroke-width="8"/>
+      <path d="M 550 430
+               C 574 430, 592 448, 592 471
+               C 592 494, 574 512, 550 512
+               L 508 512" stroke-width="8"/>
+      <path d="M 548 512 L 591 580" stroke-width="8"/>
+    </g>
+  </svg>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const svg = document.querySelector('.logo-svg');
+      setTimeout(() => {
+        svg.classList.add('visible');
+        // Wait for the draw animation to finish (5s)
+        setTimeout(() => {
+          svg.classList.add('pulse');
+        }, 5000);
+      }, 300);
+    });
+  </script>
 </body>
 </html>
