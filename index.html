@@ -3,89 +3,118 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TR Monogram Logo Animation</title>
+  <title>Destroy the News</title>
   <style>
-    body {
-      background: #000;
+    html, body {
       margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      color: #fff;
+      font-family: "Courier New", Courier, monospace;
+    }
+    canvas {
+      display: block;
+      width: 100vw;
       height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      background: #000;
+      cursor: none;
     }
-    .logo-svg {
-      opacity: 0;
-      transform: scale(0.8);
-      transition: opacity 1s ease, transform 1.2s cubic-bezier(.68,-0.55,.27,1.55);
+    #ui {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      pointer-events: none;
+      color: #fff;
+      font-family: inherit;
+      z-index: 2;
     }
-    .logo-svg.visible {
-      opacity: 1;
-      transform: scale(1);
+    #ui .score {
+      position: absolute;
+      top: 16px;
+      right: 24px;
+      font-size: 20px;
     }
-    .logo-svg g > * {
-      stroke-dasharray: 1000;
-      stroke-dashoffset: 1000;
+    #ui .combo {
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 20px;
     }
-    .logo-svg.visible g > * {
-      animation: draw 5s forwards;
-    }
-    .logo-svg.pulse {
-      animation: pulse 3.5s ease-in-out infinite;
-      filter: drop-shadow(0 0 12px #F2F2F2) drop-shadow(0 0 24px #F2F2F2);
-    }
-    @keyframes draw {
-      to {
-        stroke-dashoffset: 0;
-      }
-    }
-    @keyframes pulse {
-      0% {
-        transform: scale(1);
-        filter: drop-shadow(0 0 12px #F2F2F2) drop-shadow(0 0 24px #F2F2F2);
-      }
-      50% {
-        transform: scale(1.04);
-        filter: drop-shadow(0 0 20px #F2F2F2) drop-shadow(0 0 40px #F2F2F2);
-      }
-      100% {
-        transform: scale(1);
-        filter: drop-shadow(0 0 12px #F2F2F2) drop-shadow(0 0 24px #F2F2F2);
-      }
+    #ui .highscore {
+      position: absolute;
+      top: 16px;
+      left: 24px;
+      font-size: 20px;
     }
   </style>
 </head>
 <body>
-  <svg class="logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="TR circular monogram logo">
-    <!-- Transparent background: removed rect -->
-    <g fill="none" stroke="#F2F2F2" stroke-linecap="square" stroke-linejoin="round">
-      <circle cx="512" cy="505" r="193" stroke-width="8"/>
-      <circle cx="512" cy="505" r="118" stroke-width="8"/>
+<div id="ui">
+  <span class="highscore">HIGH 0</span>
+  <span class="combo">COMBO 0</span>
+  <span class="score">SCORE 0</span>
+</div>
+<canvas id="game"></canvas>
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-      <!-- T -->
-      <path d="M 427 430 L 510 430" stroke-width="8"/>
-      <path d="M 478 430 L 478 582" stroke-width="8"/>
+const state = {
+  mode: "start", // start, playing, crash
+  score: 0,
+  highScore: 0,
+  combo: 0,
+};
 
-      <!-- R -->
-      <path d="M 508 430 L 508 582" stroke-width="8"/>
-      <path d="M 508 430 L 550 430" stroke-width="8"/>
-      <path d="M 550 430
-               C 574 430, 592 448, 592 471
-               C 592 494, 574 512, 550 512
-               L 508 512" stroke-width="8"/>
-      <path d="M 548 512 L 591 580" stroke-width="8"/>
-    </g>
-  </svg>
-  <script>
-    window.addEventListener('DOMContentLoaded', () => {
-      const svg = document.querySelector('.logo-svg');
-      setTimeout(() => {
-        svg.classList.add('visible');
-        // Wait for the draw animation to finish (5s)
-        setTimeout(() => {
-          svg.classList.add('pulse');
-        }, 5000);
-      }, 300);
-    });
-  </script>
+function drawStartScreen() {
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#fff";
+  ctx.textAlign = "center";
+  ctx.font = "36px Courier New";
+  ctx.fillText("DESTROY THE NEWS", canvas.width / 2, canvas.height / 2 - 60);
+  ctx.font = "22px Courier New";
+  ctx.fillText("Press Enter to Begin", canvas.width / 2, canvas.height / 2);
+  ctx.font = "16px Courier New";
+  ctx.fillText("ARROWS OR MOUSE TO MOVE | SPACE TO SHOOT", canvas.width / 2, canvas.height / 2 + 40);
+}
+
+function render() {
+  if (state.mode === "start") {
+    drawStartScreen();
+    return;
+  }
+  // Placeholder gameplay rendering
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#fff";
+  ctx.textAlign = "center";
+  ctx.font = "28px Courier New";
+  ctx.fillText("Game Started!", canvas.width / 2, canvas.height / 2);
+  // Update UI
+  document.querySelector('.score').textContent = `SCORE ${state.score}`;
+  document.querySelector('.combo').textContent = `COMBO ${state.combo}`;
+  document.querySelector('.highscore').textContent = `HIGH ${state.highScore}`;
+}
+
+window.addEventListener("keydown", (e) => {
+  if (state.mode === "start" && e.key === "Enter") {
+    state.mode = "playing";
+    // ...initialize game state here...
+  }
+});
+
+function loop() {
+  render();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
 </body>
 </html>
