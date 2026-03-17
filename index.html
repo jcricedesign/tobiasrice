@@ -1,11 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blank Page</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Destroy the News</title>
+  <style>
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      color: #fff;
+      font-family: "Courier New", Courier, monospace;
+    }
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      cursor: none;
+    }
+    #ui {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      pointer-events: none;
+      color: #fff;
+      font-family: inherit;
+      z-index: 2;
+    }
+    #ui .score {
+      position: absolute;
+      top: 16px;
+      right: 24px;
+      font-size: 20px;
+    }
+    #ui .combo {
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 20px;
+    }
+    #ui .highscore {
+      position: absolute;
+      top: 16px;
+      left: 24px;
+      font-size: 20px;
+    }
+  </style>
 </head>
 <body>
+<div id="ui">
+  <span class="highscore">HIGH 0</span>
+  <span class="combo">COMBO 0</span>
+  <span class="score">SCORE 0</span>
+</div>
+<canvas id="game"></canvas>
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
+const state = {
+  mode: "start", // start, playing, crash
+  score: 0,
+  highScore: 0,
+  combo: 0,
+};
+
+function drawStartScreen() {
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#fff";
+  ctx.textAlign = "center";
+  ctx.font = "36px Courier New";
+  ctx.fillText("DESTROY THE NEWS", canvas.width / 2, canvas.height / 2 - 60);
+  ctx.font = "22px Courier New";
+  ctx.fillText("Press Enter to Begin", canvas.width / 2, canvas.height / 2);
+  ctx.font = "16px Courier New";
+  ctx.fillText("ARROWS OR MOUSE TO MOVE | SPACE TO SHOOT", canvas.width / 2, canvas.height / 2 + 40);
+}
+
+function render() {
+  if (state.mode === "start") {
+    drawStartScreen();
+    return;
+  }
+  // Placeholder gameplay rendering
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#fff";
+  ctx.textAlign = "center";
+  ctx.font = "28px Courier New";
+  ctx.fillText("Game Started!", canvas.width / 2, canvas.height / 2);
+  // Update UI
+  document.querySelector('.score').textContent = `SCORE ${state.score}`;
+  document.querySelector('.combo').textContent = `COMBO ${state.combo}`;
+  document.querySelector('.highscore').textContent = `HIGH ${state.highScore}`;
+}
+
+window.addEventListener("keydown", (e) => {
+  if (state.mode === "start" && e.key === "Enter") {
+    state.mode = "playing";
+    // ...initialize game state here...
+  }
+});
+
+function loop() {
+  render();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
 </body>
 </html>
